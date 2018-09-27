@@ -1,0 +1,23 @@
+---
+# sample trendbox.yaml
+language: node_js
+
+sandbox:
+  vault:
+    group: DMTRMONAKHOV_SANDBOX_GROUP
+env: SANDBOX_PRIVILEGED_CONTAINER=true REGISTRY=registry.yandex.net USER=dmtrmonakhov IMG_NAME=qemu-qa-kit
+
+#before_script: sudo service docker start
+script:
+  - docker build --network=host -t $IMG_NAME:test -f Dockerfile .
+  - docker tag $IMG_NAME:test $REGISTRY/$USER/$IMG_NAME:latest
+  # Basic test
+  - docker run --rm $REGISTRY/$USER/$IMG_NAME:latest ya --help
+  # Push
+  - docker login -u $USER -p $REGISTRY_OAUTH $REGISTRY
+  - docker push $REGISTRY/$USER/$IMG_NAME:latest
+  - docker save $REGISTRY/$USER/$IMG_NAME:latest -o image.tar.gz
+after_script:
+  - sudo service docker stop
+  - trendbox publish-resource image.tar.gz --type DOCKER_IMAGE_SOURCE_RESOURCE --description "docker image $REGISTRY/$USER/$IMG_NAME:latest" --attr docker_img_name="$REGISTRY/$USER/$IMG_NAME:latest" --ttl 30
+

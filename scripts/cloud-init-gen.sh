@@ -1,9 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
 tmpdir=$(mktemp -d)
 
 
-ROOT_SSH_KEY_FILE="~/.ssh/id_ed25519-robot-dmon-ci.pub"
 ROOT_SSH_KEY="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFeIY94CLqpCapdzsMSbWmax1HUDdnrOJGH4rzMutJIG robot-dmon-ci@dmws.yandex.net"
 
 INSTANCE_ID=id-123
