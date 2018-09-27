@@ -11,7 +11,7 @@
 FROM alpine
 
 RUN apk add --no-cache --update \
-#	bash \
+	bash \
 #	e2fsprogs-libs \
 	e2fsprogs \
 #	e2fsprogs-extra \

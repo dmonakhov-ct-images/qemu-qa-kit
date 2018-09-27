@@ -11,6 +11,6 @@ _fail() {
 [ -e "$VOL" ] || _fail "$VOL not exits"
 
 docker run --rm --device /dev/kvm:/dev/kvm \
-       -v $VOL:/opt/qemu-qa-kit/volume \
+       -v $VOL:/qemu-qa-kit/volume \
        $IMAGE \
        qemu-qa-kit-run.sh $@
