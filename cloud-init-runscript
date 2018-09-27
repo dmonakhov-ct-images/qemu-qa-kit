@@ -1,0 +1,12 @@
+repo_update: true
+
+packages:
+  - emacs-nox
+  - gdisk
+  - lvm
+
+runcmd:
+  - [ sh, -c 'echo HELLO WORLD']
+  - sudo systemctl enable lvm
+  - sudo systemctl start lvm
+  - sudo poweroff
