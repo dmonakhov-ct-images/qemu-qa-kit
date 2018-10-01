@@ -20,6 +20,8 @@ RUN apk add --no-cache --update \
         cdrkit \
 	qemu-img \
 	qemu-system-x86_64 \
-	tar
+	tar && \
+	mkdir -p /qemu-qa-kit/volume
+
 COPY scripts /qemu-qa-kit
 ENV PATH="/qemu-qa-kit:${PATH}"

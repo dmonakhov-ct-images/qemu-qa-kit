@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 set -e
 
@@ -11,19 +11,25 @@ DIR=$(realpath $(dirname $0))
 VOL_DIR="/qemu-qa-kit/volume"
 BASE_IMAGE="$VOL_DIR/image.qcow2"
 CI_IMAGE="$VOL_DIR/cfg_seed.iso"
+AUTHORIZED_KEY_FILE=$VOL_DIR/ssh_authorized_keys
+CFG_FOOTER=$VOL_DIR/cfg_seed.yaml
 LOG_DIR=$VOL_DIR/logs
 MEM=1024
 NUM_CPU=2
 MACHINE="pc-q35-2.8"
-PORT_FORWARD="tcp::2222-:22"
+PORT_FORWARD="tcp::22-:22"
 DATE=$(date +%Y%m%d%H%M)
+CONSOLE=" -serial mon:stdio"
+#CONSOLE=" -chardev stdio,id=console,signal=off -serial chardev:console"
 
 _usage(){
     [ -z "$1" ] || echo $1
     echo "Usage: $0 "
     echo "	-I: base_image default: $BASE_IMAGE"
-    echo "	-C: cloud-init image default: $CI_IMAGE"
     echo "	-G: Generate cloud init image, default: False"
+    echo "	-C: cloud-init image default: $CI_IMAGE"
+    echo "      -K: ssh_authorized key file default: $AUTHORIZED_KEY_FILE"
+    echo "      -F: cloud-init-header file default: $CFG_FOOTER"
     echo "	-n: num_cpu default: $NUM_CPU"
     echo "	-m: memory default: ${MEM}m"
     echo "	-M: emulate machine default: $MACHINE"
@@ -32,19 +38,23 @@ _usage(){
     echo "	--: delimiter, pass all options after this to qemu-kvm"
     exit 1
 }
-echo "Enter opts $# : all opts:$@"
 
 while (( $# >= 1 )); do
-    echo "loop opts $# : all opts:$@, handle: $1"
     case "$1" in
 	-I) shift
 	    BASE_IMAGE=$1
 	    ;;
+	-G)
+	    GEN_CI_IMAGE=t
+	    ;;
 	-C) shift
 	    CI_IMAGE=$1
 	    ;;
-	-G)
-	    GEN_CI_IMAGE=t
+	-K) shift
+	    AUTHORIZED_KEY_FILE=$1
+	    ;;
+	-F) shift
+	    CFG_FOOTER=$1
 	    ;;
 	-n) shift
 	    NUM_CPU=$1
@@ -96,20 +106,20 @@ then
     echo "$CI_IMAGE not exists, forge generation"
     GEN_CI_IMAGE=t
 fi
-[ ! -z "$GEN_CI_IMAGE" ] && $DIR/cloud-init-gen.sh $DATE
+[ ! -z "$GEN_CI_IMAGE" ] && $DIR/cloud-init-gen.sh $DATE $CI_IMAGE $AUTHORIZED_KEY_FILE $CFG_FOOTER
 
 mkdir -p $LOG_DIR
 LOGFILE="$LOG_DIR/log.$DATE"
 touch $LOGFILE
 ln -sf $LOGFILE $LOG_DIR/log.latest
-
-time qemu-system-x86_64 \
+time qemu-system-x86_64 -enable-kvm \
      -snapshot \
      -machine $MACHINE \
      -m $MEM  \
     -net nic -net user,hostfwd=$PORT_FORWARD \
     -drive file=$BASE_IMAGE,if=virtio \
     -cdrom $CI_IMAGE \
-    -nographic \
+    -vga none -nographic \
+    $CONSOLE \
     $@ | tee $LOGFILE
 

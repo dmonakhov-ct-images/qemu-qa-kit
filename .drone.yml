@@ -1,0 +1,67 @@
+---
+pipeline:
+#  dockerbuild:
+#    image: docker
+#    commands:
+#      - docker build --rm --no-cache -t qemu-qa-kit .
+#    volumes:
+#      - /var/run/docker.sock:/var/run/docker.sock
+
+  test-bionic-minimal:
+    group: test
+    image: qemu-qa-kit
+    #tmpfs:
+    #  - /tmp:exec
+    privileged: true
+    environment:
+      - TEST_IMAGE=bionic-minimal
+    commands:
+      - qemu-qa-kit-run.sh -G -n 1 -m 1024 -I work/$TEST_IMAGE/image.qcow2 -K examples/ssh_authorized_keys -F examples/debian-cfg_seed.yaml
+
+#  test-bionic:
+#    group: test
+#    image: qemu-qa-kit
+#    #tmpfs:
+#    #  - /tmp:exec
+#    privileged: true
+#    environment:
+#      - TEST_IMAGE=bionic-server-cloudimg-amd64
+#    commands:
+#      - ls -lh /dev/kvm
+#      - qemu-qa-kit-run.sh -G -n 1 -m 1024 -I work/$TEST_IMAGE/image.qcow2 -K examples/ssh_authorized_keys -F examples/debian-cfg_seed.yaml
+#
+#  test-precise:
+#    group: test
+#    image: qemu-qa-kit
+#    #tmpfs:
+#    #  - /tmp:exec
+#    privileged: true
+#    environment:
+#      - TEST_IMAGE=precise-server-cloudimg-amd64
+#    commands:
+#      - ls -lh /dev/kvm
+#      - qemu-qa-kit-run.sh -G -n 1 -m 1024 -I work/$TEST_IMAGE/image.qcow2 -K examples/ssh_authorized_keys -F examples/debian-cfg_seed.yaml
+#  test-trusty:
+#    group: test
+#    image: qemu-qa-kit
+#    #tmpfs:
+#    #  - /tmp:exec
+#    privileged: true
+#    environment:
+#      - TEST_IMAGE=trusty-server-cloudimg-amd64
+#    commands:
+#      - ls -lh /dev/kvm
+#      - qemu-qa-kit-run.sh -G -n 1 -m 1024 -I work/$TEST_IMAGE/image.qcow2 -K examples/ssh_authorized_keys -F examples/debian-cfg_seed.yaml
+#
+#  test-xenial:
+#    group: test
+#    image: qemu-qa-kit
+#    #tmpfs:
+#    #  - /tmp:exec
+#    privileged: true
+#    environment:
+#      - TEST_IMAGE=xenial-server-cloudimg-amd64
+#    commands:
+#      - ls -lh /dev/kvm
+#      - qemu-qa-kit-run.sh -G -n 1 -m 1024 -I work/$TEST_IMAGE/image.qcow2 -K examples/ssh_authorized_keys -F examples/debian-cfg_seed.yaml
+      

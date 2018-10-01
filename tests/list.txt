@@ -1,0 +1,6 @@
+# alpine is temproratly disabled, cloud-init problems
+#tests/alpine-virt-3.8.1-x86_64.sh
+tests/xenial.sh
+tests/trusty.sh
+tests/bionic.sh
+tests/precise.sh

@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/bash
 
 tmpdir=$(mktemp -d)
 VOL_DIR="/qemu-qa-kit/volume"

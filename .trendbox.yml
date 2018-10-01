@@ -7,17 +7,30 @@ sandbox:
     group: DMTRMONAKHOV_SANDBOX_GROUP
 env: SANDBOX_PRIVILEGED_CONTAINER=true REGISTRY=registry.yandex.net USER=dmtrmonakhov IMG_NAME=qemu-qa-kit
 
-#before_script: sudo service docker start
+install: npm install -g parallel
+before_script: sudo service docker start
 script:
-  - docker build --network=host -t $IMG_NAME:test -f Dockerfile .
-  - docker tag $IMG_NAME:test $REGISTRY/$USER/$IMG_NAME:latest
+  - mkdir work report
+  - lscpu
+  - lsmod
+  - dmesg -k
+  - sudo modprobe kvm || /bin/true
+  - sudo modprobe kvm-intel || /bin/true
+  - sudo mknod /dev/kvm c 10 232 || /bin/true
+  - sudo ls -lh /dev
+  - docker build --network=host --rm --no-cache -t $IMG_NAME -f Dockerfile . | tee work/log.build
+  - docker tag $IMG_NAME $REGISTRY/$USER/$IMG_NAME:latest
   # Basic test
-  - docker run --rm $REGISTRY/$USER/$IMG_NAME:latest ya --help
+  - cat tests/list.txt | grep -v '#' | parallel sudo bash -xe
   # Push
   - docker login -u $USER -p $REGISTRY_OAUTH $REGISTRY
   - docker push $REGISTRY/$USER/$IMG_NAME:latest
   - docker save $REGISTRY/$USER/$IMG_NAME:latest -o image.tar.gz
 after_script:
   - sudo service docker stop
+  - find work -type f -name 'log.*' | xargs -n1 cp -t ./report
+  - trendbox publish-report ./report
+  - trendbox publish-report ./report
+  - trendbox publish-report ./report
   - trendbox publish-resource image.tar.gz --type DOCKER_IMAGE_SOURCE_RESOURCE --description "docker image $REGISTRY/$USER/$IMG_NAME:latest" --attr docker_img_name="$REGISTRY/$USER/$IMG_NAME:latest" --ttl 30
 
