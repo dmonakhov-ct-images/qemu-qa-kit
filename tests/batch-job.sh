@@ -9,4 +9,4 @@ IMAGE_URL=http://cloud-images.ubuntu.com/bionic/current/bionic-server-cloudimg-a
 mkdir -p work/$TEST_NAME
 
 [ -e "work/$TEST_NAME/$IMAGE_NAME" ] || curl -o work/$TEST_NAME/$IMAGE_NAME $IMAGE_URL
-$DIR/../docker-run.sh -it -W $(pwd)/work/$TEST_NAME -it --job examples/batch_job
+$DIR/../scripts/qemu-qa-kit-docker-run -it -W $(pwd)/work/$TEST_NAME -it --job examples/batch_job

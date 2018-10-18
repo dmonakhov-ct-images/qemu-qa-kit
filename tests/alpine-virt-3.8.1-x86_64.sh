@@ -20,4 +20,4 @@ runcmd:
 EOF
 
 [ -e "work/$TEST_NAME/$IMAGE_NAME" ] || curl -o work/$TEST_NAME/$IMAGE_NAME $IMAGE_URL
-bash -xe $DIR/../docker-run.sh -W $(pwd)/work/$TEST_NAME -p 2222:22 -- -I /qemu-qa-kit/volume/$IMAGE_NAME -G -n 2 -m 512M
+bash -xe $DIR/../scripts/qemu-qa-kit-docker-run -W $(pwd)/work/$TEST_NAME -p 2222:22 -- -I /qemu-qa-kit/volume/$IMAGE_NAME -G -n 2 -m 512M

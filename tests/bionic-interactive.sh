@@ -16,4 +16,4 @@ packages:
 EOF
 
 [ -e "work/$TEST_NAME/$IMAGE_NAME" ] || curl -o work/$TEST_NAME/$IMAGE_NAME $IMAGE_URL
-bash -xe $DIR/../docker-run.sh -it -W $(pwd)/work/$TEST_NAME -- -G -n 2 -m 512M
+bash -xe $DIR/../scripts/qemu-qa-kit-docker-run -it -W $(pwd)/work/$TEST_NAME -- -G -n 2 -m 512M
