@@ -13,8 +13,8 @@ FROM alpine
 RUN apk add --no-cache --update \
 	bash \
 #	e2fsprogs-libs \
-	e2fsprogs \
-#	e2fsprogs-extra \
+#	e2fsprogs \
+	e2fsprogs-extra \
 #	curl \
 #	util-linux \
         cdrkit \
@@ -24,4 +24,5 @@ RUN apk add --no-cache --update \
 	mkdir -p /qemu-qa-kit/volume
 
 COPY scripts /qemu-qa-kit
+COPY examples /qemu-qa-kit/examples
 ENV PATH="/qemu-qa-kit:${PATH}"

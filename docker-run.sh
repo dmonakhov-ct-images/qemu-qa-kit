@@ -1,18 +1,25 @@
 #!/bin/bash
 
 VOL=${PWD}/volume
-
+DIR=$(dirname $0)
 IMAGE=qemu-qa-kit
-_fail() {
+RUN_ID=$(date +%Y%m%d%H%M)
+
+_fail()
+{
     echo $1
     exit 1
 }
 
-_usage(){
+_usage()
+{
     [ -z "$1" ] || echo $1
     echo "Usage: $0 "
     echo "	-W: mount DIR inside container at /qemu-qa-kit/volume, default: $VOL"
-    echo "	-p: port forward for docker, example [2222:22] forward 22-container's port to host:2222" 
+    echo "	-p: port forward for docker, example [2222:22] forward 22-container's port to host:2222"
+    echo "	-it: Attack terminal to docker container (manual/maintenance mode)"
+    echo "	--job: Directory with batch job configuration, see $DIR/examples/batch_job"
+    echo "	-N: docker image to use, default $IMAGE"
     echo "	--: delimiter, pass all options to qemu-qa-kit-run.sh"
     exit 1
 }
@@ -32,6 +39,10 @@ while (( $# >= 1 )); do
 	-it)
 	    OPTS="$OPTS -it"
 	    ;;
+	--job) shift
+	    JOB=$1
+	    kit_opt="$kit_opt --job /qemu-qa-kit/volume/job -G"
+	    ;;
 	--)
 	    shift
 	    break
@@ -47,10 +58,24 @@ while (( $# >= 1 )); do
     shift
 done
 
-[ -e "$VOL" ] || _usage "Volume directory: $VOL not found"
+[ -d "$VOL" ] || _usage "Volume directory: $VOL not found"
+if [ ! -z "$JOB" ];then
+    [ -d "$JOB" ] || _usage "Job directory: $JOB not found"
+fi
 
-docker inspect  qemu-qa-kit $IMAGE
+
 docker run --rm --device /dev/kvm:/dev/kvm \
-       -v $VOL:/qemu-qa-kit/volume $OPTS \
-       $IMAGE \
-       qemu-qa-kit-run.sh $@
+       -v $(realpath $VOL):/qemu-qa-kit/volume \
+       -v $(realpath $JOB):/qemu-qa-kit/volume/job \
+       $OPTS $IMAGE \
+       qemu-qa-kit-run.sh $kit_opt --run-id $RUN_ID $@
+
+code=$?
+test $code -eq 0 || echo "ERROR: script fail with: $code"
+
+LOGFILE="$VOL/logs/log.${RUN_ID}"
+RESFILE="$VOL/results-${RUN_ID}.tar.xz"
+echo "Log file: $LOGFILE"
+echo "Results : $RESFILE"
+
+exit $code

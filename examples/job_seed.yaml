@@ -1,0 +1,15 @@
+# Configure where output will go
+#output:
+#  all: ">> /var/log/cloud-init.log"
+
+#repo_update: true
+
+runcmd:
+  - mkdir -p /mnt/in /mnt/out /tmp/results
+  - tar -xvf /dev/sdb -C /mnt/in
+  - mount -text4 /dev/sdc /mnt/out
+  - bash -x /mnt/in/job.sh  2> /tmp/results/job-stderr.log | tee /tmp/results/job-stdout.log
+  - test -e examples/batch_job/in/job.sh && cp /var/log/cloud-init.log /tmp/results
+  - tar -Jvcf /mnt/out/results.tar.xz -C tmp results
+  - umount /mnt/out
+  - sudo poweroff

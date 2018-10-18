@@ -18,11 +18,18 @@ cat <<EOF > $tmpdir/user-data
 #cloud-config
 debug: True
 disable_root: False
+# configure interaction with ssh server
+ssh_svcname: ssh
+ssh_genkeytypes: ['rsa', 'ecdsa']
 ssh_deletekeys: False
 ssh_pwauth: True
 ssh_authorized_keys:
   - ${AUTHORIZED_KEY}
-  
+
+# Configure where output will go
+output:
+  all: ">> /var/log/cloud-init.log"
+
 # users:
 #   - name: clouduser
 #     gecos: User
@@ -47,4 +54,3 @@ EOF
 genisoimage -output $CI_IMAGE -volid cidata -joliet -rock $tmpdir/
 
 rm -rf $tmpdir
-
