@@ -27,8 +27,11 @@ while (( $# >= 1 )); do
 	     VOL=$1
 	     ;;
 	-p) shift
-	    OPTS="-p $1"
-	     ;;
+	    OPTS="$OPTS -p $1"
+	    ;;
+	-it)
+	    OPTS="$OPTS -it"
+	    ;;
 	--)
 	    shift
 	    break
