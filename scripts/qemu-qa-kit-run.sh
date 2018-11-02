@@ -7,7 +7,6 @@ _fail(){
     exit 1
 }
 DIR=$(realpath $(dirname $0))
-
 VOL_DIR="/qemu-qa-kit/volume"
 BASE_IMAGE="$VOL_DIR/image.qcow2"
 CI_IMAGE="$VOL_DIR/cfg_seed.iso"
@@ -21,6 +20,7 @@ PORT_FORWARD=",hostfwd=tcp::22-:22"
 RUN_ID=$(date +%Y%m%d%H%M)
 CONSOLE=" -serial mon:stdio"
 #CONSOLE=" -chardev stdio,id=console,signal=off -serial chardev:console"
+TMPDIR=$(mktemp -d)
 
 _prep_image()
 {
@@ -28,7 +28,6 @@ _prep_image()
     local clean=${2:-Y}
     local size=${3:-10G}
     local fmt=${4:-qcow2}
-    local mkfs={$5}
 
     [ "$clear" == "Y" ] && [ -e $img ] && unlink $img
     qemu-img create -f $fmt $img $size
@@ -47,12 +46,20 @@ _prep_job_data()
 	job_seed=$DIR/examples/job_seed.yaml
     fi
 
-    tar  -vc -C $(dirname $job_seed) $(basename $job_seed) -C $in_dir .  > $in_img
-    _prep_image $out_img
+    touch $TMPDIR/job.config
+    for env in $JOB_ARGS
+    do
+	echo "$env" >> $TMPDIR/job.config
+    done
+    tar  -vc -C $(dirname $job_seed) $(basename $job_seed) \
+	 -C $in_dir . \
+	 -C $TMPDIR job.config > $in_img
+
+    _prep_image $out_img Y 10G raw
     mkfs.ext4 -qF $out_img
 
-    JOB_DEV="$JOB_DEV -drive file=$VOL_DIR/disks/job_in.img,if=ide,snapshot=on"
-    JOB_DEV="$JOB_DEV -drive file=$VOL_DIR/disks/job_out.img,if=ide"
+    JOB_DEV="$JOB_DEV -drive format=raw,file=$VOL_DIR/disks/job_in.img,if=ide,snapshot=on"
+    JOB_DEV="$JOB_DEV -drive format=raw,file=$VOL_DIR/disks/job_out.img,if=ide"
 
     echo "Job mode requested: Force cloud-init image $CI_IMAGE generation"
     GEN_CI_IMAGE=t
@@ -82,7 +89,8 @@ _usage(){
     echo "	-L: qemu-kvm execution log dir, default: $LOG_DIR"
     echo "	--keep: keep temporal data"
     echo "	-p: port_forward_opts default: $PORT_FORWARD"
-    echo "	-J: Directory with batch job configuration, see $DIR/examples/batch_job"
+    echo "	--job/-J: Directory with batch job configuration, see $DIR/examples/batch_job"
+    echo "	--job-arg: Job arguments, will be available inside vm at /mnt/in/job.config file example: MY_VAR=my-key"
     echo "	--run-id: Run environment id, default is generated as: ${RUN_ID}"
     echo "	--: delimiter, pass all options after this to qemu-kvm"
     exit 1
@@ -141,6 +149,9 @@ while (( $# >= 1 )); do
 	-J|--job) shift
 		  JOB="$1"
 		  ;;
+	--job-arg) shift
+		   JOB_ARGS="$JOB_ARGS $1"
+		   ;;
 	--run-id) shift
 	    RUN_ID="$1"
 	    ;;
@@ -201,3 +212,4 @@ then
     echo "Results are available at: $RESFILE"
     [ -z "$KEEP_TMP" ]  && rm -rf $VOL_DIR/disks/job_in.img $VOL_DIR/disks/job_out.img
 fi
+rm -rf $TMPDIR

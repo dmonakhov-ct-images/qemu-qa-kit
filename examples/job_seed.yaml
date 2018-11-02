@@ -5,11 +5,12 @@
 #repo_update: true
 
 runcmd:
-  - mkdir -p /mnt/in /mnt/out /tmp/results
+  - mkdir -p /mnt/in /mnt/out
   - tar -xvf /dev/sdb -C /mnt/in
   - mount -text4 /dev/sdc /mnt/out
-  - bash -x /mnt/in/job.sh  2> /tmp/results/job-stderr.log | tee /tmp/results/job-stdout.log
-  - test -e examples/batch_job/in/job.sh && cp /var/log/cloud-init.log /tmp/results
-  - tar -Jvcf /mnt/out/results.tar.xz -C tmp results
+  - mkdir /mnt/out/results
+  - bash -x /mnt/in/job.sh  2> /mnt/out/results/job-stderr.log | tee /mnt/out/results/job-stdout.log
+  - cp /var/log/cloud-init* /mnt/out/results
+  - tar -Jvcf /mnt/out/results.tar.xz -C /mnt/out results
   - umount /mnt/out
   - sudo poweroff

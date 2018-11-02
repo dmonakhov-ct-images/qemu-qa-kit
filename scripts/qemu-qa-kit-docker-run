@@ -19,6 +19,7 @@ _usage()
     echo "	-p: port forward for docker, example [2222:22] forward 22-container's port to host:2222"
     echo "	-it: Attack terminal to docker container (manual/maintenance mode)"
     echo "	--job: Directory with batch job configuration, see $DIR/examples/batch_job"
+    echo "	--job-arg: Job arguments, will be available inside vm at /mnt/in/job.config file example: MY_VAR=my-key"
     echo "	-N: docker image to use, default $IMAGE"
     echo "	--docker-opts: Extra docker options"
     echo "	--: delimiter, pass all options to qemu-qa-kit-run.sh"
@@ -47,6 +48,9 @@ while (( $# >= 1 )); do
 	    JOB=$1
 	    kit_opt="$kit_opt --job /qemu-qa-kit/volume/job -G"
 	    ;;
+	--job-arg) shift
+		   kit_opt="$kit_opt --job-arg $1"
+		   ;;
 	--)
 	    shift
 	    break
