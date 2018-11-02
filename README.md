@@ -9,16 +9,16 @@ docker build -t qemu-qa-kit .
 ```
 
 ## Usage example
-## Get execution script from docker container
+### Get execution script from existing docker container
 ```
-docker run -v $(pwd):/mnt --rm qemu-qa-kit cp -v /qemu-qa-kit/qemu-qa-kit-docker-run /mnt
+docker run -v $(pwd):/mnt --rm dmonakhov/qemu-qa-kit cp -v /qemu-qa-kit/qemu-qa-kit-docker-run /mnt
 ```
 
 ### Download and execute ubuntu-bionic VM in interactive mote (user=root, passws=linux)
 ```
 ./tests/bionic-interactive.sh
 ```
-Run basic batch job inside VM
+### Run basic batch job inside VM
 ```
 ./tests/batch-job.sh
 <SNIP>
