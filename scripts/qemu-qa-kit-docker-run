@@ -20,6 +20,7 @@ _usage()
     echo "	-it: Attack terminal to docker container (manual/maintenance mode)"
     echo "	--job: Directory with batch job configuration, see $DIR/examples/batch_job"
     echo "	-N: docker image to use, default $IMAGE"
+    echo "	--docker-opts: Extra docker options"
     echo "	--: delimiter, pass all options to qemu-qa-kit-run.sh"
     exit 1
 }
@@ -39,6 +40,9 @@ while (( $# >= 1 )); do
 	-it)
 	    OPTS="$OPTS -it"
 	    ;;
+	--docker-opts) shift
+		       OPTS="$OPTS $1"
+		       ;;
 	--job) shift
 	    JOB=$1
 	    kit_opt="$kit_opt --job /qemu-qa-kit/volume/job -G"

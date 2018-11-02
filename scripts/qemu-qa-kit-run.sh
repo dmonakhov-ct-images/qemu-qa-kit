@@ -17,7 +17,7 @@ LOG_DIR=$VOL_DIR/logs
 MEM=1024
 NUM_CPU=2
 MACHINE="pc-q35-2.8"
-PORT_FORWARD="tcp::22-:22"
+PORT_FORWARD=",hostfwd=tcp::22-:22"
 RUN_ID=$(date +%Y%m%d%H%M)
 CONSOLE=" -serial mon:stdio"
 #CONSOLE=" -chardev stdio,id=console,signal=off -serial chardev:console"
@@ -112,7 +112,10 @@ while (( $# >= 1 )); do
 	    NUM_CPU=$1
 	    ;;
 	-p) shift
-	    PORT_FORWARD="$1"
+	    PORT_FORWARD=",hostfwd=$1"
+	    ;;
+	--no-hostfwd)
+	    PORT_FORWARD=""
 	    ;;
 	-L) shift
 	    LOG_DIR="$1"
@@ -180,7 +183,7 @@ ln -sf $LOGFILE $LOG_DIR/log.latest
 time qemu-system-x86_64 -enable-kvm \
      -machine $MACHINE \
      -m $MEM  \
-     -net nic -net user,hostfwd=$PORT_FORWARD \
+     -net nic -net user$PORT_FORWARD \
      -drive file=$BASE_IMAGE,if=ide,snapshot=on \
      -cdrom $CI_IMAGE \
      $JOB_DEV \
