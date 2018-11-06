@@ -190,7 +190,7 @@ mkdir -m 777 -p $LOG_DIR
 LOGFILE="$LOG_DIR/log.${RUN_ID}"
 touch $LOGFILE
 chmod 666 $LOGFILE
-ln -sf $LOGFILE $LOG_DIR/log.latest
+ln -sf $(basename $LOGFILE) $LOG_DIR/log.latest
 time qemu-system-x86_64 -enable-kvm \
      -machine $MACHINE \
      -m $MEM  \
@@ -207,7 +207,7 @@ if [ ! -z "$JOB" ]
 then
     RESFILE=$VOL_DIR/results-${RUN_ID}.tar.xz
     _get_job_results $VOL_DIR/disks/job_out.img $RESFILE
-    ln -sf $RESFILE $VOL_DIR/results-latest.tar.xz
+    ln -sf $(basename $RESFILE) $VOL_DIR/results-latest.tar.xz
     chmod 666 $RESFILE
     echo "Results are available at: $RESFILE"
     [ -z "$KEEP_TMP" ]  && rm -rf $VOL_DIR/disks/job_in.img $VOL_DIR/disks/job_out.img
