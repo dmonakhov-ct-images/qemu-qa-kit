@@ -2,7 +2,7 @@
 
 VOL=${PWD}/volume
 DIR=$(dirname $0)
-IMAGE=qemu-qa-kit
+IMAGE=dmonakhov/qemu-qa-kit
 RUN_ID=$(date +%Y%m%d%H%M)
 
 _fail()
