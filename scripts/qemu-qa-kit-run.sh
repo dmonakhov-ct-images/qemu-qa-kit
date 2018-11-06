@@ -88,6 +88,7 @@ _usage(){
     echo "	-M: emulate machine default: $MACHINE"
     echo "	-L: qemu-kvm execution log dir, default: $LOG_DIR"
     echo "	--keep: keep temporal data"
+    echo "	-U: Unpack results archive"
     echo "	-p: port_forward_opts default: $PORT_FORWARD"
     echo "	--job/-J: Directory with batch job configuration, see $DIR/examples/batch_job"
     echo "	--job-arg: Job arguments, will be available inside vm at /mnt/in/job.config file example: MY_VAR=my-key"
@@ -124,6 +125,9 @@ while (( $# >= 1 )); do
 	    ;;
 	--no-hostfwd)
 	    PORT_FORWARD=""
+	    ;;
+	-U)
+	    UNPACK_RESFILE='Y'
 	    ;;
 	-L) shift
 	    LOG_DIR="$1"
@@ -210,6 +214,12 @@ then
     ln -sf $(basename $RESFILE) $VOL_DIR/results-latest.tar.xz
     chmod 666 $RESFILE
     echo "Results are available at: $RESFILE"
+    if [ ! -z "$UNPACK_RESFILE" ]
+    then
+	[ -d $VOL_DIR/results ] && rm -rf $VOL_DIR/results
+	tar Jxf $RESFILE -C $VOL_DIR
+	echo "Unpacked results are available at: $VOL_DIR/results"
+    fi
     [ -z "$KEEP_TMP" ]  && rm -rf $VOL_DIR/disks/job_in.img $VOL_DIR/disks/job_out.img
 fi
 rm -rf $TMPDIR
