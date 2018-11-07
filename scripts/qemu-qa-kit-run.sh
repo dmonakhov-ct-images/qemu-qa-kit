@@ -19,6 +19,7 @@ MACHINE="pc-q35-2.8"
 PORT_FORWARD=",hostfwd=tcp::22-:22"
 RUN_ID=$(date +%Y%m%d%H%M)
 CONSOLE=" -serial mon:stdio"
+SNAPSHOT_OPT=",snapshot=on"
 #CONSOLE=" -chardev stdio,id=console,signal=off -serial chardev:console"
 TMPDIR=$(mktemp -d)
 
@@ -58,7 +59,7 @@ _prep_job_data()
     _prep_image $out_img Y 10G raw
     mkfs.ext4 -qF $out_img
 
-    JOB_DEV="$JOB_DEV -drive format=raw,file=$VOL_DIR/disks/job_in.img,if=ide,snapshot=on"
+    JOB_DEV="$JOB_DEV -drive format=raw,file=$VOL_DIR/disks/job_in.img,if=ide$SNAPSHOT_OPT"
     JOB_DEV="$JOB_DEV -drive format=raw,file=$VOL_DIR/disks/job_out.img,if=ide"
 
     echo "Job mode requested: Force cloud-init image $CI_IMAGE generation"
@@ -79,8 +80,9 @@ _usage(){
     [ -z "$1" ] || echo $1
     echo "Usage: $0 "
     echo "	-I: base_image default: $BASE_IMAGE"
+    echo "	-B: backing_file for base image default: $BACKING_IMAGE"
     echo "	-G: Generate cloud init image, default: False"
-    echo "	-C: cloud-init image default: $CI_IMAGE"
+   echo "	-C: cloud-init image default: $CI_IMAGE"
     echo "      -K: ssh_authorized key file default: $AUTHORIZED_KEY_FILE"
     echo "      -F: cloud-init-footer file default: $CFG_FOOTER"
     echo "	-n: num_cpu default: $NUM_CPU"
@@ -88,6 +90,7 @@ _usage(){
     echo "	-M: emulate machine default: $MACHINE"
     echo "	-L: qemu-kvm execution log dir, default: $LOG_DIR"
     echo "	--keep: keep temporal data"
+    echo "	--no-snapshot: Allow modify base image"
     echo "	-U: Unpack results archive"
     echo "	-p: port_forward_opts default: $PORT_FORWARD"
     echo "	--job/-J: Directory with batch job configuration, see $DIR/examples/batch_job"
@@ -101,6 +104,9 @@ while (( $# >= 1 )); do
     case "$1" in
 	-I) shift
 	    BASE_IMAGE=$1
+	    ;;
+	-B) shift
+	    BACKING_IMAGE=$1
 	    ;;
 	-G)
 	    GEN_CI_IMAGE=t
@@ -125,6 +131,9 @@ while (( $# >= 1 )); do
 	    ;;
 	--no-hostfwd)
 	    PORT_FORWARD=""
+	    ;;
+	--no-snapshot)
+	    SNAPSHOT_OPT=""
 	    ;;
 	-U)
 	    UNPACK_RESFILE='Y'
@@ -176,6 +185,7 @@ done
 
 mkdir -m 777 -p $VOL_DIR/disks
 
+[ -z "$BACKING_IMAGE" ] || qemu-img create -f qcow2  -b $BACKING_IMAGE $BASE_IMAGE
 [ -z "$BASE_IMAGE" ] && _fail "Usage: $0 <IMAGE_NAME> <list of quemu opts>"
 [ -e "$BASE_IMAGE" ] || _usage "Cant open image $BASE_IMAGE"
 if [ ! -z "$JOB" ];then
@@ -195,11 +205,13 @@ LOGFILE="$LOG_DIR/log.${RUN_ID}"
 touch $LOGFILE
 chmod 666 $LOGFILE
 ln -sf $(basename $LOGFILE) $LOG_DIR/log.latest
+
+
 time qemu-system-x86_64 -enable-kvm \
      -machine $MACHINE \
      -m $MEM  \
      -net nic -net user$PORT_FORWARD \
-     -drive file=$BASE_IMAGE,if=ide,snapshot=on \
+     -drive file=$BASE_IMAGE,if=ide$SNAPSHOT_OPT \
      -cdrom $CI_IMAGE \
      $JOB_DEV \
      $XDEV \
