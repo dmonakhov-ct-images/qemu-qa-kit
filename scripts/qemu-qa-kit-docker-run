@@ -22,6 +22,7 @@ _usage()
     echo "	--job-arg: Job arguments, will be available inside vm at /mnt/in/job.config file example: MY_VAR=my-key"
     echo "	-N: docker image to use, default $IMAGE"
     echo "	--docker-opts: Extra docker options"
+    echo "	--debug: Enable debug mode"
     echo "	--: delimiter, pass all options to qemu-qa-kit-run.sh"
     exit 1
 }
@@ -40,6 +41,11 @@ while (( $# >= 1 )); do
 	    ;;
 	-it)
 	    OPTS="$OPTS -it"
+	    ;;
+	--debug)
+	    DO_DEBUG="Y"
+	    kit_opt="$kit_opt --debug"
+	    set -x
 	    ;;
 	--docker-opts) shift
 		       OPTS="$OPTS $1"

@@ -96,6 +96,7 @@ _usage(){
     echo "	--job/-J: Directory with batch job configuration, see $DIR/examples/batch_job"
     echo "	--job-arg: Job arguments, will be available inside vm at /mnt/in/job.config file example: MY_VAR=my-key"
     echo "	--run-id: Run environment id, default is generated as: ${RUN_ID}"
+    echo "	--debug: enable debug mode"
     echo "	--: delimiter, pass all options after this to qemu-kvm"
     exit 1
 }
@@ -119,6 +120,11 @@ while (( $# >= 1 )); do
 	    ;;
 	--keep)
 	    KEEP_TMP='Y'
+	    ;;
+	--debug)
+	    DO_DEBUG="Y"
+	    kit_opt="$kit_opt --debug"
+	    set -x
 	    ;;
 	-F) shift
 	    CFG_FOOTER=$1
@@ -207,6 +213,13 @@ chmod 666 $LOGFILE
 ln -sf $(basename $LOGFILE) $LOG_DIR/log.latest
 
 
+if [ ! -z "$DO_DEBUG" ]
+then
+    /sbin/ifconfig -a
+    ping -c 3 8.8.8.8 || /bin/true
+    ping -c 3 google.com || /bin/true
+    curl ifconfig.me/all || /bin/all
+fi
 time qemu-system-x86_64 -enable-kvm \
      -machine $MACHINE \
      -m $MEM  \

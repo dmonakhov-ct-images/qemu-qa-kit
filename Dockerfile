@@ -15,7 +15,7 @@ RUN apk add --no-cache --update \
 #	e2fsprogs-libs \
 #	e2fsprogs \
 	e2fsprogs-extra \
-#	curl \
+	curl \
 #	util-linux \
         cdrkit \
 	qemu-img \
