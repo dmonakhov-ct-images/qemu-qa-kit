@@ -10,7 +10,9 @@ runcmd:
   - mount -text4 /dev/sdc /mnt/out
   - mkdir /mnt/out/results
   - bash -x /mnt/in/job.sh  2> /mnt/out/results/job-stderr.log | tee /mnt/out/results/job-stdout.log
-  - cp /var/log/cloud-init* /mnt/out/results
+  - mkdir -p /mnt/out/results/sysinfo
+  - cp -r /var/log /mnt/out/results/sysinfo/var_log
+  - dmesg > /mnt/out/results/sysinfo/dmesg.txt
   - tar -Jvcf /mnt/out/results.tar.xz -C /mnt/out results
   - umount /mnt/out
   - sudo poweroff
