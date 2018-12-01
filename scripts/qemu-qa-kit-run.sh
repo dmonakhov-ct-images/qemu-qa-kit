@@ -141,6 +141,9 @@ while (( $# >= 1 )); do
 	--no-snapshot)
 	    SNAPSHOT_OPT=""
 	    ;;
+	--discard)
+	    DISCARD_OPT=",discard=unmap"
+	    ;;
 	-U)
 	    UNPACK_RESFILE='Y'
 	    ;;
@@ -224,7 +227,7 @@ time qemu-system-x86_64 -enable-kvm \
      -machine $MACHINE \
      -m $MEM  \
      -net nic -net user$PORT_FORWARD \
-     -drive file=$BASE_IMAGE,if=ide$SNAPSHOT_OPT \
+     -drive file=$BASE_IMAGE,if=ide$SNAPSHOT_OPT${DISCARD_OPT} \
      -cdrom $CI_IMAGE \
      $JOB_DEV \
      $XDEV \
